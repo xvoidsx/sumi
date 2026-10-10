@@ -955,5 +955,51 @@ countWords();
 setSaved(true);
 setCaretFromSource(0);
 </script>
+<script>
+// sumi Electron bridge — native open/save dialogs.
+// Only activates inside the Electron app (window.sumiNative).
+// Harmless in browsers: the bridge object won't exist, so this is a no-op.
+(function() {
+  if (!window.sumiNative || !window.sumiNative.isElectron) return;
+
+  let nativePath = null;
+
+  // Native save — mirrors the fileHandle behavior (re-save without re-prompting)
+  window.saveToDisk = async function() {
+    const name = (docname.value || "untitled").replace(/[^\w\- ]+/g, "").trim() || "untitled";
+    try {
+      const saved = await window.sumiNative.saveFile(source, nativePath, name);
+      if (!saved) return; // user cancelled
+      nativePath = saved;
+      fileHandle = null; // native path is the source of truth now
+      docname.value = saved.split("/").pop().replace(/\.(md|markdown|txt)$/, "");
+      dirty = false; setSaved(true);
+    } catch (e) {
+      console.error(e);
+      setSaved(false);
+    }
+  };
+
+  // Native open — swap the button to drop the hidden-file-input listener
+  const btnOpen = document.getElementById("btn-open");
+  if (btnOpen) {
+    const clone = btnOpen.cloneNode(true);
+    btnOpen.replaceWith(clone);
+    clone.addEventListener("click", async () => {
+      const result = await window.sumiNative.openFile();
+      if (!result) return;
+      // openFile() handles the dirty confirm itself and returns early on cancel;
+      // only record the path if content actually loaded.
+      const prevSource = source;
+      await openFile(new File([result.content], result.name, { type: "text/markdown" }));
+      if (source !== prevSource) nativePath = result.path;
+    });
+  }
+
+  // New document resets the native path (capture phase runs before the existing handler)
+  const btnNew = document.getElementById("btn-new");
+  if (btnNew) btnNew.addEventListener("click", () => { nativePath = null; }, true);
+})();
+</script>
 </body>
 </html>

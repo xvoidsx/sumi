@@ -1,0 +1,44 @@
+{
+  "name": "sumi",
+  "version": "1.0.0",
+  "description": "sumi 墨 — xvoidsx distraction-free Markdown writing",
+  "main": "main.js",
+  "author": {
+    "name": "xvoidsx",
+    "email": "hello@xvoidsx.org"
+  },
+  "homepage": "https://xvoidsx.org",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --linux deb"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "org.xvoidsx.sumi",
+    "productName": "sumi",
+    "afterPack": "./scripts/afterPack.js",
+    "linux": {
+      "target": ["deb"],
+      "category": "Office",
+      "icon": "../icons",
+      "maintainer": "xvoidsx <hello@xvoidsx.org>"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "package.json",
+      {
+        "from": "..",
+        "to": ".",
+        "filter": ["sumi.html"]
+      },
+      {
+        "from": "../icons",
+        "to": "icons"
+      }
+    ]
+  }
+}
