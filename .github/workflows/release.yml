@@ -22,8 +22,6 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Build deb
         run: npx electron-builder --linux deb
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Get version from tag
         id: version
         run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
